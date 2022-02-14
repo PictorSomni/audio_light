@@ -6,6 +6,7 @@ import terminalio
 import digitalio
 from adafruit_debouncer import Debouncer
 import neopixel
+import rainbowio
 from adafruit_ble import BLERadio
 from adafruit_ble.advertising.adafruit import AdafruitColor
 # can try import bitmap_label below for alternative
@@ -69,7 +70,7 @@ time.sleep(1)
 def send(broadcast_text, broadcast_color):
     text_area.text = broadcast_text
     text_area.scale = 2
-    pixels.fill(0xFF00FF)
+    pixels.fill(0xFFFFFF)
     advertisement.color = broadcast_color
     ble.stop_advertising()
     ble.start_advertising(advertisement)
@@ -82,7 +83,7 @@ while True :
     button_b.update()
     button_c.update()
 
-    pixels.fill(0x0077FF)
+    pixels.fill(rainbowio.colorwheel(int(time.monotonic() * 20) & 255))
 
     if not pin_b.value and not pin_c.value :
         send("ORAGE", 0x001100)
