@@ -29,17 +29,17 @@ ble = BLERadio()
 # advertisement = ProvideServicesAdvertisement(uart)
 advertisement = AdafruitColor()
 
-## SD card
+## SD CARD
 sd = sdcardio.SDCard(board.SPI(), board.D2)
 vfs = storage.VfsFat(sd)
 storage.mount(vfs, '/sd')
 os.listdir('/sd')
 
-## Audio output
+## AAUDIO
 audio = audiopwmio.PWMAudioOut(board.A0)
 audio_file = None
 
-## Neopixel
+## NEOPIXELS
 pixel = neopixel.NeoPixel(board.A2, 32, brightness=0.3)
 off = (0, 0, 0)
 pixel.fill(off)
