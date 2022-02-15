@@ -26,7 +26,6 @@ advertisement = AdafruitColor()
 
 ## ENCODER
 encoder = rotaryio.IncrementalEncoder(board.D10, board.D12)
-
 switch = digitalio.DigitalInOut(board.D11)
 switch.direction = digitalio.Direction.INPUT
 switch.pull = digitalio.Pull.UP
@@ -49,7 +48,24 @@ text = "LE FUTUR"
 text_area = label.Label(terminalio.FONT, text=text, scale=2, color=0xFFFFFF, x=21, y=15)
 group.append(text_area)
 
-print("Turning on each LED, one at a time...")
+## ANIMATION + MENU
+menu = [["ORAGE",       0x001100],
+        ["PORTE",       0x110000],
+        ["WHAAAAAT",    0x000011],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000],
+        ["VIDE",     0x000000]
+]
 for i in range(16):
     trellis.led[i] = True
     time.sleep(0.05)
@@ -69,12 +85,11 @@ pressed_buttons = set()
 def send(broadcast_text, broadcast_color):
     text_area.text = broadcast_text
     text_area.scale = 2
-    # pixels.fill(0xFFFFFF)
     advertisement.color = broadcast_color
     ble.stop_advertising()
     ble.start_advertising(advertisement)
     time.sleep(1)
-    text_area.text = "LE FUTUR"
+    text_area.text = "MENU"
 
 #############################################################
 #                         MAIN LOOP                         #
@@ -90,31 +105,29 @@ while True:
         for _ in range(position_change):
             print("+1")
         text_area.text = f"{current_position}"
+
     elif position_change < 0:
         for _ in range(-position_change):
             print("-1")
         text_area.text = f"{current_position}"
     last_position = current_position
+
     if not switch.value and switch_state is None:
         switch_state = "pressed"
+
     if switch.value and switch_state == "pressed":
-       text_area.text = "PRESSED"
+       text_area.text = "BOUTON"
        switch_state = None
 
     just_pressed, released = trellis.read_buttons()
+
     for b in just_pressed:
         print("pressed:", b)
         trellis.led[b] = True
-        if b == 0:
-            send("ORAGE", 0x001100)
-
-        if b == 1:
-            send("PORTE", 0x110000)
-
-        if b == 2:
-            send("WHAAAAAT", 0x000011)
+        send(menu[b][0], menu[b][1])
 
     pressed_buttons.update(just_pressed)
+
     for b in released:
         print("released:", b)
         # text_area.text = b
