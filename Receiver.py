@@ -35,14 +35,14 @@ vfs = storage.VfsFat(sd)
 storage.mount(vfs, '/sd')
 os.listdir('/sd')
 
-## AAUDIO
+## AUDIO
 audio = audiopwmio.PWMAudioOut(board.A0)
 audio_file = None
 
 ## NEOPIXELS
-pixel = neopixel.NeoPixel(board.A2, 32, brightness=0.3)
+pixels = neopixel.NeoPixel(board.A2, 32, brightness=0.3)
 off = (0, 0, 0)
-pixel.fill(off)
+pixels.fill(off)
 
 enable = digitalio.DigitalInOut(board.D10)
 enable.direction = digitalio.Direction.OUTPUT
@@ -88,42 +88,53 @@ def thunder():
     color = random.randint(0, 255)
     wait = random.uniform(0.01, 0.2)
     while times > 0 :
-        pixel.fill((color, color, color))
+        pixels.fill((color, color, color))
         delay(wait)
-        pixel.fill((0, 0, 0))
+        pixels.fill(off)
         delay(wait)
         times -= 1
     delay(random.uniform(0.5, 20))
 
 
 def rainbow():
-    for i in range(255):
-        pixel.fill((colorwheel(i)))
-    pixel.fill((0, 0, 0))
+    pixels.fill(colorwheel(int(time.monotonic() * 20) & 255))
+    pixels.fill(off)
 
 
 def nothing():
-    pixel.fill((0, 0, 0))
+    pixels.fill(off)
 
+#############################################################
+#                          EFFECTS                          #
+#############################################################
+fx = {
+    "0x000000":["bruits bizzares",  nothing],
+    "0x000001":["degats",           thunder],
+    "0x000002":["dragon",           nothing],
+    "0x000003":["explosion",        thunder],
+    "0x000004":["fantome",          nothing],
+    "0x000005":["lich",             nothing],
+    "0x000006":["orage",            thunder],
+    "0x000007":["porte",            nothing],
+    "0x000008":["rire",             nothing],
+    "0x000009":["whaaaaat",         rainbow],
+    "0x00000A":["",                 nothing],
+    "0x00000B":["",                 nothing],
+    "0x00000C":["",                 nothing],
+    "0x00000D":["",                 nothing],
+    "0x00000E":["",                 nothing],
+    "0x00000F":["",                 nothing]
+}
 
 #############################################################
 #                         MAIN LOOP                         #
 #############################################################
 while True:
     for entry in ble.start_scan(AdafruitColor, timeout=5):
-        print(f"#{entry.color:06x}\n")
-        # pixel.fill(entry.color)
+        color = f"0x{entry.color:06x}"
 
-        if entry.color == 0x110000 :
-            play_file("porte", nothing)
+        if color in fx.keys() :
+            play_file(fx[color][0], fx[color][1])
             break
-        
-        elif entry.color == 0x000011 :
-            play_file("whaaaaat", rainbow)
-            break
-        
-        elif entry.color == 0x001100 :
-            play_file("orage", thunder)
-            break
-
+            
     ble.stop_scan()

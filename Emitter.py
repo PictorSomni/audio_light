@@ -45,26 +45,26 @@ color_palette = displayio.Palette(1)
 color_palette[0] = 0xFFFFFF  # White
 
 text = "LE FUTUR"
-text_area = label.Label(terminalio.FONT, text=text, scale=2, color=0xFFFFFF, x=21, y=15)
+text_area = label.Label(terminalio.FONT, text=text, scale=2, color=0xFFFFFF, x=13, y=15)
 group.append(text_area)
 
 ## ANIMATION + MENU
-menu = [["ORAGE",       0x001100],
-        ["PORTE",       0x110000],
-        ["WHAAAAAT",    0x000011],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000],
-        ["VIDE",     0x000000]
+menu = [["BRUITS",      0x000000],
+        ["DEGATS",      0x000001],
+        ["DRAGON",      0x000002],
+        ["EXPLOSION",   0x000003],
+        ["FANTOME",     0x000004],
+        ["LICHE",       0x000005],
+        ["ORAGE",       0x000006],
+        ["PORTE",       0x000007],
+        ["RIRE",        0x000008],
+        ["WTF",         0x000009],
+        ["VIDE",        0x00000A],
+        ["VIDE",        0x00000B],
+        ["VIDE",        0x00000C],
+        ["VIDE",        0x00000D],
+        ["VIDE",        0x00000E],
+        ["VIDE",        0x00000F]
 ]
 for i in range(16):
     trellis.led[i] = True
@@ -82,11 +82,14 @@ pressed_buttons = set()
 #############################################################
 #                         FUNCTION                          #
 #############################################################
-def send(broadcast_text, broadcast_color):
+def choice(broadcast_text, broadcast_color):
     text_area.text = broadcast_text
     text_area.scale = 2
     advertisement.color = broadcast_color
-    ble.stop_advertising()
+
+
+def send():
+    text_area.text = "BROADCAST"
     ble.start_advertising(advertisement)
     time.sleep(1)
     text_area.text = "MENU"
@@ -116,7 +119,7 @@ while True:
         switch_state = "pressed"
 
     if switch.value and switch_state == "pressed":
-       text_area.text = "BOUTON"
+       send()
        switch_state = None
 
     just_pressed, released = trellis.read_buttons()
@@ -124,7 +127,7 @@ while True:
     for b in just_pressed:
         print("pressed:", b)
         trellis.led[b] = True
-        send(menu[b][0], menu[b][1])
+        choice(menu[b][0], menu[b][1])
 
     pressed_buttons.update(just_pressed)
 
