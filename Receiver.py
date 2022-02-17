@@ -58,29 +58,30 @@ def delay(wait):
 
 
 def play_file(filename, func):
-    audio_path = "/sd/{}".format(filename)
-    files = [file for file in os.listdir(audio_path)]
-    global audio_file  # pylint: disable=global-statement
+    if filename:
+        audio_path = "/sd/{}".format(filename)
+        files = [file for file in os.listdir(audio_path)]
+        global audio_file  # pylint: disable=global-statement
 
-    if audio.playing:
-        audio.stop()
-    if audio_file:
-        audio_file.close()
+        if audio.playing:
+            audio.stop()
+        if audio_file:
+            audio_file.close()
 
-    file = random.choice(files)
+        file = random.choice(files)
 
-    audio_file = open("{}/{}".format(audio_path, file), "rb")
-    try:
-        wav = audiocore.WaveFile(audio_file)
-    except ValueError :
-        print(f"ERROR --> {file}")
-    else :
-        audio.play(wav)
-        while audio.playing:
-            func()
-        audio.stop()
-        audio_file.close()
-        gc.collect()
+        audio_file = open("{}/{}".format(audio_path, file), "rb")
+        try:
+            wav = audiocore.WaveFile(audio_file)
+        except ValueError :
+            print(f"ERROR --> {file}")
+        else :
+            audio.play(wav)
+            while audio.playing:
+                func()
+            audio.stop()
+            audio_file.close()
+            gc.collect()
 
 
 def thunder():
@@ -108,22 +109,22 @@ def nothing():
 #                          EFFECTS                          #
 #############################################################
 fx = {
-    "0x000000":["bruits bizzares",  nothing],
-    "0x000001":["degats",           thunder],
-    "0x000002":["dragon",           nothing],
-    "0x000003":["explosion",        thunder],
-    "0x000004":["fantome",          nothing],
-    "0x000005":["lich",             nothing],
-    "0x000006":["orage",            thunder],
-    "0x000007":["porte",            nothing],
-    "0x000008":["rire",             nothing],
-    "0x000009":["whaaaaat",         rainbow],
-    "0x00000A":["",                 nothing],
-    "0x00000B":["",                 nothing],
-    "0x00000C":["",                 nothing],
-    "0x00000D":["",                 nothing],
-    "0x00000E":["",                 nothing],
-    "0x00000F":["",                 nothing]
+    0x000000:["bruits bizzares",  nothing],
+    0x000001:["degats",           thunder],
+    0x000002:["dragon",           nothing],
+    0x000003:["explosion",        thunder],
+    0x000004:["fantome",          nothing],
+    0x000005:["lich",             nothing],
+    0x000006:["orage",            thunder],
+    0x000007:["porte",            nothing],
+    0x000008:["rire",             nothing],
+    0x000009:["whaaaaat",         rainbow],
+    0x00000A:[None,               nothing],
+    0x00000B:[None,               nothing],
+    0x00000C:[None,               nothing],
+    0x00000D:[None,               nothing],
+    0x00000E:[None,               nothing],
+    0x00000F:[None,               nothing]
 }
 
 #############################################################
@@ -131,7 +132,8 @@ fx = {
 #############################################################
 while True:
     for entry in ble.start_scan(AdafruitColor, timeout=5):
-        color = f"0x{entry.color:06x}"
+        color = entry.color
+        print(f"0x{color:06x}")
 
         if color in fx.keys() :
             play_file(fx[color][0], fx[color][1])
