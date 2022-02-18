@@ -13,6 +13,7 @@ from adafruit_ble.advertising.adafruit import AdafruitColor
 from adafruit_display_text import label
 import adafruit_displayio_ssd1306
 from adafruit_trellis import Trellis
+from adafruit_debouncer import Debouncer
 
 #############################################################
 #                          CONTENT                          #
@@ -26,9 +27,10 @@ advertisement = AdafruitColor()
 
 ## ENCODER
 encoder = rotaryio.IncrementalEncoder(board.D10, board.D12)
-switch = digitalio.DigitalInOut(board.D11)
-switch.direction = digitalio.Direction.INPUT
-switch.pull = digitalio.Pull.UP
+switch_pin = digitalio.DigitalInOut(board.D11)
+switch_pin.direction = digitalio.Direction.INPUT
+switch_pin.pull = digitalio.Pull.UP
+switch = Debouncer(switch_pin)
 
 ## I2C
 i2c = board.I2C()
@@ -36,7 +38,7 @@ display_bus = displayio.I2CDisplay(i2c, device_address=0x3C)
 display = adafruit_displayio_ssd1306.SSD1306(display_bus, width=128, height=32)
 trellis = Trellis(i2c)
 
-# Make the display context
+# DISPLAY CONTEXT
 group = displayio.Group()
 display.show(group)
 
@@ -48,7 +50,7 @@ text = "LE FUTUR"
 text_area = label.Label(terminalio.FONT, text=text, scale=2, color=0xFFFFFF, x=13, y=15)
 group.append(text_area)
 
-## ANIMATION + MENU
+## MENU
 menu = [["BRUITS",      0x000000],
         ["DEGATS",      0x000001],
         ["DRAGON",      0x000002],
@@ -66,16 +68,20 @@ menu = [["BRUITS",      0x000000],
         ["VIDE",        0x00000E],
         ["VIDE",        0x00000F]
 ]
+
+## START ANIMATION
 for i in range(16):
     trellis.led[i] = True
     time.sleep(0.05)
-time.sleep(0.5)
-trellis.led.fill(False)
+
+for i in range(16):
+    trellis.led[i] = False
+    time.sleep(0.05)
 
 ## A BIT OF WAIT
 time.sleep(0.5)
 
-switch_state = None
+## STATE OF THE ART
 last_position = encoder.position
 pressed_buttons = set()
 
@@ -101,38 +107,34 @@ while True:
     display.show(group)
     ble.stop_advertising()
     time.sleep(0.1)
-    
+
+    switch.update()
     current_position = encoder.position
     position_change = current_position - last_position
-    if position_change > 0:
-        for _ in range(position_change):
-            print("+1")
-        text_area.text = f"{current_position}"
 
-    elif position_change < 0:
-        for _ in range(-position_change):
-            print("-1")
-        text_area.text = f"{current_position}"
-    last_position = current_position
+    '''
+        If i don't need the following code to make it works, i don't need the following code. :D
+    '''
+    # if position_change > 0:
+    #     for _ in range(position_change):
+    #         print("+1")
+    #     text_area.text = f"{current_position}"
 
-    if not switch.value and switch_state is None:
-        switch_state = "pressed"
+    # elif position_change < 0:
+    #     for _ in range(-position_change):
+    #         print("-1")
+    #     text_area.text = f"{current_position}"
 
-    if switch.value and switch_state == "pressed":
-       send()
-       switch_state = None
+    if switch.fell:
+        send()
 
     just_pressed, released = trellis.read_buttons()
 
     for b in just_pressed:
-        print("pressed:", b)
+        trellis.led.fill(False)
         trellis.led[b] = True
         choice(menu[b][0], menu[b][1])
 
     pressed_buttons.update(just_pressed)
-
-    for b in released:
-        print("released:", b)
-        # text_area.text = b
-        trellis.led[b] = False
+    last_position = current_position
 
