@@ -69,14 +69,16 @@ menu = [["BRUITS",      0x000000],
         ["VIDE",        0x00000F]
 ]
 
+menu_choice = ""
+
 ## START ANIMATION
 for i in range(16):
     trellis.led[i] = True
-    time.sleep(0.05)
+    time.sleep(0.03)
 
 for i in range(16):
     trellis.led[i] = False
-    time.sleep(0.05)
+    time.sleep(0.03)
 
 ## A BIT OF WAIT
 time.sleep(0.5)
@@ -98,7 +100,7 @@ def send():
     text_area.text = "BROADCAST"
     ble.start_advertising(advertisement)
     time.sleep(1)
-    text_area.text = "MENU"
+    text_area.text = menu_choice
 
 #############################################################
 #                         MAIN LOOP                         #
@@ -111,20 +113,9 @@ while True:
     switch.update()
     current_position = encoder.position
     position_change = current_position - last_position
-
-    '''
-        If i don't need the following code to make it works, i don't need the following code. :D
-    '''
-    # if position_change > 0:
-    #     for _ in range(position_change):
-    #         print("+1")
-    #     text_area.text = f"{current_position}"
-
-    # elif position_change < 0:
-    #     for _ in range(-position_change):
-    #         print("-1")
-    #     text_area.text = f"{current_position}"
-
+    if not position_change == 0:
+        text_area.text = f"{current_position}"
+        
     if switch.fell:
         send()
 
@@ -134,6 +125,7 @@ while True:
         trellis.led.fill(False)
         trellis.led[b] = True
         choice(menu[b][0], menu[b][1])
+        menu_choice = menu[b][0]
 
     pressed_buttons.update(just_pressed)
     last_position = current_position
